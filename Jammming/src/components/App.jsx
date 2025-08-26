@@ -5,7 +5,7 @@ import Playlist from './Playlist';
 import Spotify from '../api/spotify';
 
 const App = () => {
-const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [playlistName, setPlaylistName] = useState('My Playlist');
@@ -13,25 +13,26 @@ const [searchTerm, setSearchTerm] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // A more robust useEffect to handle the initial authentication check.
+  // Use a more robust useEffect to handle the initial authentication check.
   useEffect(() => {
-    // This function will handle the authentication state check.
-    const handleAuthCheck = () => {
+    const authenticateUser = async () => {
       try {
-        const token = Spotify.getAccessToken();
+        const token = await Spotify.getAccessTokenFromUrl();
         if (token) {
           setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error("Error during authentication check:", error);
+        console.error('Authentication check failed:', error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }
     };
-    handleAuthCheck();
-  }, []); // Empty dependency array to run only once on mount.
 
+    authenticateUser();
+  }, []);
 
   // Function to handle the search.
   const handleSearch = async () => {
@@ -100,7 +101,7 @@ const [searchTerm, setSearchTerm] = useState('');
               <p className="text-lg mb-4 text-center">Please connect to Spotify to begin.</p>
               <button
                 className="p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md"
-                onClick={() => Spotify.getAccessToken()}
+                onClick={() => Spotify.authenticate()}
               >
                 Connect to Spotify
               </button>
@@ -204,6 +205,5 @@ const [searchTerm, setSearchTerm] = useState('');
     </div>
   );
 };
-
 
 export default App;
