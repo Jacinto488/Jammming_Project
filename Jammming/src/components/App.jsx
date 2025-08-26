@@ -5,25 +5,33 @@ import Playlist from './Playlist';
 import Spotify from '../api/spotify';
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [playlist, setPlaylist] = useState([]);
   const [playlistName, setPlaylistName] = useState('My Playlist');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // useEffect to handle the initial authentication check.
+  // A more robust useEffect to handle the initial authentication check.
   useEffect(() => {
-    try {
-      // Attempt to get the token. This will redirect if needed.
-      const token = Spotify.getAccessToken();
-      if (token) {
-        setIsAuthenticated(true);
+    // This function will handle the authentication state check.
+    const handleAuthCheck = () => {
+      try {
+        const token = Spotify.getAccessToken();
+        if (token) {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("Error during authentication check:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error(error);
-    }
+    };
+    handleAuthCheck();
   }, []); // Empty dependency array to run only once on mount.
+
 
   // Function to handle the search.
   const handleSearch = async () => {
@@ -79,108 +87,118 @@ const App = () => {
         <h1 className="text-6xl font-extrabold text-green-400 drop-shadow-md">Jammming</h1>
       </header>
 
-      {!isAuthenticated ? (
+      {/* Show a loading state while checking authentication */}
+      {isLoading ? (
         <div className="flex flex-col items-center justify-center h-96">
-          <p className="text-lg mb-4 text-center">Please connect to Spotify to begin.</p>
-          <button
-            className="p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md"
-            onClick={() => Spotify.getAccessToken()}
-          >
-            Connect to Spotify
-          </button>
+          <p className="text-lg text-gray-400">Loading...</p>
         </div>
       ) : (
         <>
-          {/* Search Bar component */}
-          <div className="w-full max-w-4xl p-4 bg-gray-800 rounded-xl shadow-lg mb-8">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <input
-                type="text"
-                className="flex-grow p-3 rounded-lg border-2 border-green-500 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
-                placeholder="Enter a song, artist, or album"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();
-                  }
-                }}
-              />
+          {/* Display the main content if authenticated */}
+          {!isAuthenticated ? (
+            <div className="flex flex-col items-center justify-center h-96">
+              <p className="text-lg mb-4 text-center">Please connect to Spotify to begin.</p>
               <button
-                className="w-full sm:w-auto p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md"
-                onClick={handleSearch}
+                className="p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md"
+                onClick={() => Spotify.getAccessToken()}
               >
-                Search
+                Connect to Spotify
               </button>
             </div>
-          </div>
-
-          {/* Main content area: Search Results and Playlist */}
-          <div className="flex flex-col md:flex-row w-full max-w-6xl gap-8">
-            {/* Search Results component */}
-            <div className="flex-1 bg-gray-800 rounded-xl p-6 shadow-lg">
-              <h2 className="text-3xl font-bold mb-4 text-center text-green-400">Results</h2>
-              <div className="space-y-4">
-                {searchResults.length > 0 ? (
-                  searchResults.map(track => (
-                    <div key={track.id} className="flex justify-between items-center p-4 bg-gray-700 rounded-lg shadow-inner transition-transform transform hover:scale-105">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white">{track.name}</h3>
-                        <p className="text-sm text-gray-400">{track.artist} | {track.album}</p>
-                      </div>
-                      <button
-                        className="p-2 rounded-full bg-green-500 text-white font-bold hover:bg-green-600 transition-colors"
-                        onClick={() => addTrack(track)}
-                      >
-                        +
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-400 mt-8">Start your search to see results here.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Playlist component */}
-            <div className="flex-1 bg-gray-800 rounded-xl p-6 shadow-lg">
-              <div className="flex flex-col items-center">
-                <input
-                  type="text"
-                  className="w-full p-3 mb-4 rounded-lg border-2 border-green-500 bg-gray-700 text-white placeholder-gray-400 text-center font-bold focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
-                  value={playlistName}
-                  onChange={(e) => setPlaylistName(e.target.value)}
-                />
-                <div className="w-full space-y-4 mb-4">
-                  {playlist.length > 0 ? (
-                    playlist.map(track => (
-                      <div key={track.id} className="flex justify-between items-center p-4 bg-gray-700 rounded-lg shadow-inner transition-transform transform hover:scale-105">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white">{track.name}</h3>
-                          <p className="text-sm text-gray-400">{track.artist} | {track.album}</p>
-                        </div>
-                        <button
-                          className="p-2 rounded-full bg-red-500 text-white font-bold hover:bg-red-600 transition-colors"
-                          onClick={() => removeTrack(track)}
-                        >
-                          -
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-center text-gray-400 mt-8">Add tracks to your playlist here.</p>
-                  )}
+          ) : (
+            <>
+              {/* Search Bar component */}
+              <div className="w-full max-w-4xl p-4 bg-gray-800 rounded-xl shadow-lg mb-8">
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <input
+                    type="text"
+                    className="flex-grow p-3 rounded-lg border-2 border-green-500 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
+                    placeholder="Enter a song, artist, or album"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch();
+                      }
+                    }}
+                  />
+                  <button
+                    className="w-full sm:w-auto p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md"
+                    onClick={handleSearch}
+                  >
+                    Search
+                  </button>
                 </div>
-                <button
-                  className="w-full p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md disabled:bg-green-800"
-                  onClick={savePlaylist}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Save to Spotify'}
-                </button>
               </div>
-            </div>
-          </div>
+
+              {/* Main content area: Search Results and Playlist */}
+              <div className="flex flex-col md:flex-row w-full max-w-6xl gap-8">
+                {/* Search Results component */}
+                <div className="flex-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                  <h2 className="text-3xl font-bold mb-4 text-center text-green-400">Results</h2>
+                  <div className="space-y-4">
+                    {searchResults.length > 0 ? (
+                      searchResults.map(track => (
+                        <div key={track.id} className="flex justify-between items-center p-4 bg-gray-700 rounded-lg shadow-inner transition-transform transform hover:scale-105">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-white">{track.name}</h3>
+                            <p className="text-sm text-gray-400">{track.artist} | {track.album}</p>
+                          </div>
+                          <button
+                            className="p-2 rounded-full bg-green-500 text-white font-bold hover:bg-green-600 transition-colors"
+                            onClick={() => addTrack(track)}
+                          >
+                            +
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-center text-gray-400 mt-8">Start your search to see results here.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Playlist component */}
+                <div className="flex-1 bg-gray-800 rounded-xl p-6 shadow-lg">
+                  <div className="flex flex-col items-center">
+                    <input
+                      type="text"
+                      className="w-full p-3 mb-4 rounded-lg border-2 border-green-500 bg-gray-700 text-white placeholder-gray-400 text-center font-bold focus:outline-none focus:ring-2 focus:ring-green-400 transition-colors"
+                      value={playlistName}
+                      onChange={(e) => setPlaylistName(e.target.value)}
+                    />
+                    <div className="w-full space-y-4 mb-4">
+                      {playlist.length > 0 ? (
+                        playlist.map(track => (
+                          <div key={track.id} className="flex justify-between items-center p-4 bg-gray-700 rounded-lg shadow-inner transition-transform transform hover:scale-105">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-white">{track.name}</h3>
+                              <p className="text-sm text-gray-400">{track.artist} | {track.album}</p>
+                            </div>
+                            <button
+                              className="p-2 rounded-full bg-red-500 text-white font-bold hover:bg-red-600 transition-colors"
+                              onClick={() => removeTrack(track)}
+                            >
+                              -
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-center text-gray-400 mt-8">Add tracks to your playlist here.</p>
+                      )}
+                    </div>
+                    <button
+                      className="w-full p-3 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-md disabled:bg-green-800"
+                      onClick={savePlaylist}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? 'Saving...' : 'Save to Spotify'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
