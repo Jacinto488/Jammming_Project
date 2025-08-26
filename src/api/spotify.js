@@ -55,8 +55,15 @@ const getAccessToken = async (code) => {
     localStorage.setItem('access_token', access_token);
     localStorage.setItem('expires_in', Date.now() + expires_in * 1000);
     localStorage.removeItem('verifier');
-    // Redirect to the main page after successful authentication
-    window.location.href = redirectUri;
+    
+    // --- THIS IS THE KEY CHANGE ---
+    // Remove the `code` and `state` parameters from the URL after getting the token.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("code");
+    url.searchParams.delete("state");
+    window.history.pushState({}, document.title, url.toString());
+    // ----------------------------
+
     return access_token;
   } catch (error) {
     console.error('Error getting access token:', error);
@@ -77,7 +84,7 @@ const Spotify = {
     params.append('response_type', 'code');
     params.append('client_id', clientId);
     params.append('scope', scope);
-    params.append('redirect_uri', redirectUri); // Removed '/callback'
+    params.append('redirect_uri', redirectUri);
     params.append('state', generateRandomString(16));
     params.append('code_challenge_method', 'S256');
     params.append('code_challenge', code_challenge);
