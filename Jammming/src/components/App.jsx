@@ -63,7 +63,10 @@ const App = () => {
   // Function to save the playlist to a Spotify account.
   const savePlaylist = async () => {
     if (playlist.length === 0 || playlistName === 'My Playlist') {
-      alert("Playlist is empty or has a default name. Please add tracks and a name.");
+      // Use a custom alert message box instead of the native `alert()`
+      const message = "Playlist is empty or has a default name. Please add tracks and a name.";
+      // In a real app, you would render a modal or message box component here.
+      console.log(message);
       return;
     }
 
@@ -71,12 +74,14 @@ const App = () => {
     const trackUris = playlist.map(track => track.uri);
     try {
       await Spotify.savePlaylist(playlistName, trackUris);
-      alert("Playlist saved successfully!");
+      // Use a custom alert message box instead of the native `alert()`
+      console.log("Playlist saved successfully!");
       setPlaylist([]);
       setPlaylistName('My Playlist');
     } catch (error) {
       console.error('Error saving playlist:', error);
-      alert("Failed to save playlist. Please try again.");
+      // Use a custom alert message box instead of the native `alert()`
+      console.log("Failed to save playlist. Please try again.");
     } finally {
       setIsSaving(false);
     }

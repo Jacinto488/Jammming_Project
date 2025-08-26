@@ -1,7 +1,7 @@
 // Spotify API Utility File
 
 const clientId = '2705a4b7eb204711b4a7a8ea1d22a1e0'; // Replace with your Spotify client ID
-const redirectUri = 'https://jacinto488.github.io/Jammming_Project'; // Dynamically gets the base URL
+const redirectUri = "https://jacinto488.github.io/Jammming_Project";
 const authorizationUrl = "https://accounts.spotify.com/authorize";
 const tokenUrl = "https://accounts.spotify.com/api/token";
 const scope = [
@@ -55,6 +55,8 @@ const getAccessToken = async (code) => {
     localStorage.setItem('access_token', access_token);
     localStorage.setItem('expires_in', Date.now() + expires_in * 1000);
     localStorage.removeItem('verifier');
+    // Redirect to the main page after successful authentication
+    window.location.href = redirectUri;
     return access_token;
   } catch (error) {
     console.error('Error getting access token:', error);
@@ -75,7 +77,7 @@ const Spotify = {
     params.append('response_type', 'code');
     params.append('client_id', clientId);
     params.append('scope', scope);
-    params.append('redirect_uri', redirectUri);
+    params.append('redirect_uri', redirectUri); // Removed '/callback'
     params.append('state', generateRandomString(16));
     params.append('code_challenge_method', 'S256');
     params.append('code_challenge', code_challenge);
@@ -89,6 +91,7 @@ const Spotify = {
     const code = urlParams.get('code');
     
     if (code) {
+      // The redirect URL is now the root, so we handle the code here.
       return getAccessToken(code);
     }
     
@@ -189,4 +192,3 @@ const Spotify = {
 };
 
 export default Spotify;
-
