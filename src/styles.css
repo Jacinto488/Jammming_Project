@@ -1,0 +1,186 @@
+/* styles.css */
+
+/*
+  General Styles
+  --------------------------------------------------
+  These styles apply to the entire body of the application.
+  We set a dark background, a clean font, and ensure the page
+  fills the entire viewport.
+*/
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #0d0d0d; /* Very dark black for the background */
+  color: #e0e0e0; /* Off-white for text to ensure readability */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+  Containers & Layout
+  --------------------------------------------------
+  These styles handle the main layout of the application,
+  ensuring content is centered and well-spaced.
+*/
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+.App-header {
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.App-header h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #4CAF50; /* A vibrant green for the title */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.App-search, .App-playlist {
+  width: 100%;
+  max-width: 800px;
+  background-color: #1a1a1a; /* Dark gray for component backgrounds */
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-bottom: 2rem;
+}
+
+.App-search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #4CAF50;
+  background-color: #262626; /* Slightly lighter dark gray for input */
+  color: #e0e0e0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.App-search-input::placeholder {
+  color: #888;
+}
+
+.App-search-button, .App-save-button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #4CAF50; /* Green for main buttons */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.App-search-button:hover, .App-save-button:hover {
+  background-color: #388e3c; /* Darker green on hover */
+}
+
+/*
+  Track Lists & Items
+  --------------------------------------------------
+  These styles make the lists of tracks (search results and playlist)
+  look clean and interactive.
+*/
+.Track-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.Track {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #262626;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Track:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.Track-information {
+  display: flex;
+  flex-direction: column;
+}
+
+.Track-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.Track-artist, .Track-album {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+}
+
+.Track-action-button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.Track-action-button-remove {
+  background-color: #F44336; /* Red for removing tracks */
+}
+
+.Track-action-button:hover {
+  background-color: #388e3c;
+}
+
+.Track-action-button-remove:hover {
+  background-color: #d32f2f;
+}
+
+/*
+  Playlist
+  --------------------------------------------------
+  Styles for the playlist name and the save button.
+*/
+.Playlist-name-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #4CAF50;
+  background-color: #262626;
+  color: #e0e0e0;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/*
+  Responsive Design
+  --------------------------------------------------
+  Adjusts the layout for smaller screens to ensure a
+  good user experience on mobile devices.
+*/
+@media (max-width: 768px) {
+  .App-content {
+    flex-direction: column;
+  }
+}
