@@ -55,8 +55,9 @@ body {
 
 .App-playlist {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  align-content: center;
 }
 
 .App-search-input {
