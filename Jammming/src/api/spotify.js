@@ -1,7 +1,5 @@
-import { useEffect } from 'react';
-
-const CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID';
-const REDIRECT_URI = 'YOUR_REDIRECT_URI';
+const CLIENT_ID = '2705a4b7eb204711b4a7a8ea1d22a1e0';
+const REDIRECT_URI = 'https://jacinto488.github.io/Jammming_Project/';
 const AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const RESPONSE_TYPE = 'token';
 
@@ -13,19 +11,23 @@ const Spotify = {
       return accessToken;
     }
 
-    const urlParams = new URLSearchParams(window.location.hash);
-    const token = urlParams.get('access_token');
-    const expiresIn = urlParams.get('expires_in');
+    // Extract token from URL hash
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.substring(1));
+      const token = params.get('access_token');
+      const expiresIn = params.get('expires_in');
 
-    if (token) {
-      accessToken = token;
-      const expiresTime = new Date().getTime() + expiresIn * 1000;
-      window.setTimeout(() => (accessToken = ''), expiresIn * 1000);
-      window.history.pushState('Access Token', null, '/');
-      return accessToken;
-    } else {
-      window.location = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`;
+      if (token) {
+        accessToken = token;
+        window.setTimeout(() => (accessToken = ''), expiresIn * 1000);
+        window.history.pushState('Access Token', null, '/');
+        return accessToken;
+      }
     }
+
+    // Redirect for authentication if no token
+    window.location = `${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`;
   },
 
   search(term) {

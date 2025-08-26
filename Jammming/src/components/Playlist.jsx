@@ -1,8 +1,8 @@
 import React from 'react';
 
-const Playlist = ({ playlist, onRemoveTrack, onSave }) => {
+const Playlist = ({ playlist, onRemove, onSave }) => {
     const handleRemoveTrack = (track) => {
-        onRemoveTrack(track);
+        onRemove(track);
     };
 
     const handleSave = () => {
@@ -13,7 +13,7 @@ const Playlist = ({ playlist, onRemoveTrack, onSave }) => {
         <div className="playlist">
             <h2>Your Playlist</h2>
             <ul>
-                {playlist.tracks.map((track) => (
+                {playlist.map((track) => (
                     <li key={track.id}>
                         <span>{track.name} - {track.artist}</span>
                         <button onClick={() => handleRemoveTrack(track)}>Remove</button>

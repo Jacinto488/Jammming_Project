@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SearchBar from './SearchBar';
 import SearchResults from './SearchResults';
 import Playlist from './Playlist';
-import { search } from '../api/spotify';
+import Spotify from '../api/spotify';
 
 const App = () => {
     const [searchResults, setSearchResults] = useState([]);
@@ -17,7 +17,7 @@ const App = () => {
     };
 
     const searchTracks = async (term) => {
-        const results = await search(term);
+        const results = await Spotify.search(term);
         setSearchResults(results);
     };
 
@@ -25,8 +25,9 @@ const App = () => {
         <div>
             <h1>Jammming</h1>
             <SearchBar onSearch={searchTracks} />
+            <p>SearchBar is rendering!</p>
             <SearchResults 
-                results={searchResults} 
+                searchResults={searchResults} 
                 onAdd={addTrackToPlaylist} 
             />
             <Playlist 

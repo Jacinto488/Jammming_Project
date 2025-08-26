@@ -1,35 +1,39 @@
 {
   "name": "jammming",
   "version": "1.0.0",
-  "description": "A web application that allows users to search for songs and create playlists using the Spotify API.",
-  "main": "src/index.js",
+  "private": true,
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-scripts": "^5.0.1"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "keywords": [
-    "react",
-    "spotify",
-    "music",
-    "playlist"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
-    "axios": "^0.21.1"
-  },
-  "devDependencies": {
-    "eslint": "^7.14.0",
-    "eslint-plugin-react": "^7.27.0"
-  },
-  "homepage": "https://yourusername.github.io/jammming",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/jammming.git"
+    "url": "git+https://github.com/Jacinto488/Jammming_Project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jacinto488/Jammming_Project/issues"
+  },
+  "homepage": ".",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
