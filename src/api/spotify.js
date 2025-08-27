@@ -1,7 +1,7 @@
 // Spotify API Utility File
 
 const clientId = '2705a4b7eb204711b4a7a8ea1d22a1e0'; // Replace with your Spotify client ID
-const redirectUri = "https://jacinto488.github.io/Jammming_Project";
+const redirectUri = "https://jacinto488.github.io/Jammming_Project/";
 const authorizationUrl = "https://accounts.spotify.com/authorize";
 const tokenUrl = "https://accounts.spotify.com/api/token";
 const scope = [
@@ -36,7 +36,10 @@ const base64urlencode = (input) => {
 
 const getAccessToken = async (code) => {
   const verifier = localStorage.getItem('verifier');
-  if (!verifier) return null;
+  if (!verifier) {
+    console.error("No PKCE verifier found in localStorage.");
+    return null;
+  }
 
   const params = new URLSearchParams();
   params.append("client_id", clientId);
@@ -51,25 +54,38 @@ const getAccessToken = async (code) => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: params
     });
-    const { access_token, expires_in } = await result.json();
+
+    const data = await result.json();
+    console.log("Token exchange response:", data);
+
+    if (!result.ok) {
+      console.error("Spotify token request failed:", data);
+      return null;
+    }
+
+    const { access_token, expires_in } = data;
+
+    if (!access_token) {
+      console.error("No access_token returned from Spotify:", data);
+      return null;
+    }
+
     localStorage.setItem('access_token', access_token);
     localStorage.setItem('expires_in', Date.now() + expires_in * 1000);
     localStorage.removeItem('verifier');
-    
-    // --- THIS IS THE KEY CHANGE ---
-    // Remove the `code` and `state` parameters from the URL after getting the token.
+
+    // Remove the `code` and `state` parameters from the URL after success
     const url = new URL(window.location.href);
     url.searchParams.delete("code");
     url.searchParams.delete("state");
     window.history.pushState({}, document.title, url.toString());
-    // ----------------------------
 
     return access_token;
   } catch (error) {
     console.error('Error getting access token:', error);
     return null;
   }
-}
+};
 
 const Spotify = {
   // Initiates the PKCE authentication flow
