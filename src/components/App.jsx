@@ -16,24 +16,25 @@ const App = () => {
 
   // Use a more robust useEffect to handle the initial authentication check.
   useEffect(() => {
-    const authenticateUser = async () => {
-      try {
-        const token = await Spotify.getAccessTokenFromUrl();
-        if (token) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
+  const authenticateUser = async () => {
+    try {
+      const token = await Spotify.getAccessTokenFromUrl();
+      if (token) {
+        setIsAuthenticated(true);
+      } else {
+        // Not authenticated → start the login flow
+        Spotify.authenticate(); //  Redirect to Spotify login
       }
-    };
+    } catch (error) {
+      console.error('Authentication check failed:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    authenticateUser();
-  }, []);
+  authenticateUser();
+}, []);
 
   // Function to handle the search.
   const handleSearch = async () => {
