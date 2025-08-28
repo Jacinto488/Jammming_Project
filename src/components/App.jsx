@@ -18,15 +18,8 @@ const App = () => {
   useEffect(() => {
   const authenticateUser = async () => {
     const token = await Spotify.getAccessTokenFromUrl();
-
-    if (!token) {
-      // No valid token → redirect to Spotify login immediately
-      console.log("No token found, redirecting to Spotify login...");
-      Spotify.authenticate();
-    } else {
-      // Token exists → user is authenticated
-      setIsAuthenticated(true);
-    }
+    if (token) setIsAuthenticated(true); 
+    // Otherwise, Spotify.authenticate() is already called inside getAccessTokenFromUrl()
   };
 
   authenticateUser();
