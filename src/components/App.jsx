@@ -16,16 +16,21 @@ const App = () => {
 
   // Use a more robust useEffect to handle the initial authentication check.
   useEffect(() => {
-  const checkAuth = async () => {
+  const authenticateUser = async () => {
     const token = await Spotify.getAccessTokenFromUrl();
-    if (token) {
-      setIsAuthenticated(true);
+
+    if (!token) {
+      // No valid token → redirect to Spotify login immediately
+      console.log("No token found, redirecting to Spotify login...");
+      Spotify.authenticate();
     } else {
-      Spotify.authenticate(); // force login redirect
+      // Token exists → user is authenticated
+      setIsAuthenticated(true);
     }
   };
-    checkAuth();
-  }, []);
+
+  authenticateUser();
+}, []);
 
   // Function to handle the search.
   const handleSearch = async () => {
@@ -37,10 +42,14 @@ const App = () => {
   } catch (error) {
     console.error('Error during search:', error);
 
-    // Auto-redirect to Spotify login if error is 403 (forbidden)
-    if (error.message.includes('403') || error.message.includes('Search request failed')) {
-      console.warn('Access token invalid or expired. Redirecting to Spotify login...');
-      Spotify.authenticate();
+    // Redirect to Spotify login if access token is missing, expired, or forbidden
+    if (
+      error.message.includes('401') || 
+      error.message.includes('403') || 
+      error.message.includes('Access token is missing')
+    ) {
+      console.warn('Access token invalid or missing. Redirecting to Spotify login...');
+      Spotify.authenticate(); // triggers full PKCE login flow
     }
   }
 };
