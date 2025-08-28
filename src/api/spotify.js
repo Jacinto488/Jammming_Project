@@ -109,24 +109,28 @@ const Spotify = {
   },
 
   // Retrieves the access token from the URL if a code is present
-  getAccessTokenFromUrl: async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-      // The redirect URL is now the root, so we handle the code here.
-      return getAccessToken(code);
-    }
-    
-    // Check for an existing token in local storage
-    const storedToken = localStorage.getItem('access_token');
-    const expiresIn = localStorage.getItem('expires_in');
-    if (storedToken && Date.now() < expiresIn) {
-      return storedToken;
-    }
-    
-    return null;
-  },
+getAccessTokenFromUrl: async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('code');
+
+  if (code) {
+    return getAccessToken(code);
+  }
+
+  // Check for an existing token in local storage
+  const storedToken = localStorage.getItem('access_token');
+  const expiresIn = localStorage.getItem('expires_in');
+
+  // If we have a token and it hasn't expired, use it
+  if (storedToken && Date.now() < expiresIn) {
+    return storedToken;
+  }
+
+  // Token missing or expired → force re-authentication
+  console.warn("Access token missing or expired, re-authenticating...");
+  await Spotify.authenticate();
+  return null;
+},
 
   // Fetches a user's profile
   getProfile: async (accessToken) => {
@@ -146,9 +150,9 @@ const Spotify = {
 
   // Searches for tracks
   search: async (term) => {
-    const accessToken = localStorage.getItem('access_token');
+    const accessToken = await Spotify.getAccessTokenFromUrl();
     if (!accessToken) {
-      console.error('Access token is missing.');
+      console.error("Unable to get a valid access token.");
       return [];
     }
 
@@ -175,13 +179,12 @@ const Spotify = {
 
   // Saves a playlist
   savePlaylist: async (name, trackUris) => {
-    const accessToken = localStorage.getItem('access_token');
     const profile = await Spotify.getProfile(accessToken);
     const userId = profile.id;
-
-    if (!accessToken || !userId) {
-      console.error('Access token or user ID is missing.');
-      return;
+    const accessToken = await Spotify.getAccessTokenFromUrl();
+    if (!accessToken) {
+      console.error("Unable to get a valid access token.");
+      return [];
     }
 
     try {
