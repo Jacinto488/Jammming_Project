@@ -166,12 +166,6 @@ getAccessTokenFromUrl: async () => {
       throw new Error('Access token is missing'); // now throws, triggers redirect
     }
 
-    if (!response.ok) {
-      const data = await parseSpotifyResponse(response);
-      console.error("Spotify search error:", data);
-      throw new Error(`${response.status} - Search request failed`);
-    }
-
     try {
       const response = await fetch(
         `https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`,
