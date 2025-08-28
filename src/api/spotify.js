@@ -86,6 +86,15 @@ const getAccessToken = async (code) => {
   }
 };
 
+const parseSpotifyResponse = async (response) => {
+  const text = await response.text();
+  try {
+    return JSON.parse(text); // try JSON
+  } catch {
+    return { error: text }; // fallback to plain text
+  }
+};
+
 const Spotify = {
   // Initiates the PKCE authentication flow
   authenticate: async () => {
@@ -132,10 +141,15 @@ getAccessTokenFromUrl: async () => {
       const response = await fetch('https://api.spotify.com/v1/me', {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
+
+      const data = await parseSpotifyResponse(response);
+
       if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
+        console.error("Spotify profile error:", data);
+        throw new Error(`Profile request failed: ${response.status}`);
       }
-      return await response.json();
+
+      return data;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;
@@ -143,75 +157,97 @@ getAccessTokenFromUrl: async () => {
   },
 
   // Searches for tracks
- search: async (term) => {
-  const accessToken = await Spotify.getAccessTokenFromUrl();
-  console.log("Using access token:", accessToken);
+  search: async (term) => {
+    const accessToken = await Spotify.getAccessTokenFromUrl();
+    console.log("Using access token:", accessToken);
 
-  if (!accessToken) {
-    console.error('Access token is missing.');
-    return [];
-  }
-
-  try {
-    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Spotify search error:", errorData);
-      throw new Error('Search request failed');
+    if (!accessToken) {
+      console.error('Access token is missing.');
+      return [];
     }
-    const data = await response.json();
-    return data.tracks.items.map(track => ({
-      id: track.id,
-      name: track.name,
-      artist: track.artists.map(artist => artist.name).join(', '),
-      album: track.album.name,
-      uri: track.uri
-    }));
-  } catch (error) {
-    console.error('Error searching:', error);
-    return [];
-  }
-},
 
-  // Saves a playlist
+    try {
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      const data = await parseSpotifyResponse(response);
+
+      if (!response.ok) {
+        console.error("Spotify search error:", data);
+        throw new Error(`Search request failed: ${response.status}`);
+      }
+
+      return data.tracks.items.map(track => ({
+        id: track.id,
+        name: track.name,
+        artist: track.artists.map(artist => artist.name).join(', '),
+        album: track.album.name,
+        uri: track.uri
+      }));
+    } catch (error) {
+      console.error('Error searching:', error);
+      return [];
+    }
+  },
+
+   // Saves a playlist
   savePlaylist: async (name, trackUris) => {
     const accessToken = await Spotify.getAccessTokenFromUrl();
     if (!accessToken) {
-    console.error("Unable to get a valid access token.");
-    return [];
-  }
-
-  const profile = await Spotify.getProfile(accessToken);
-  if (!profile) {
-    console.error("Could not fetch user profile.");
-    return [];
-  }
-  const userId = profile.id;
+      console.error("Unable to get a valid access token.");
+      return;
+    }
 
     try {
-      // Create a new playlist
-      const createPlaylistResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, public: false })
-      });
-      const playlist = await createPlaylistResponse.json();
-      const playlistId = playlist.id;
+      // Fetch profile to get user ID
+      const profile = await Spotify.getProfile(accessToken);
+      if (!profile) {
+        console.error("Could not fetch user profile");
+        return;
+      }
+      const userId = profile.id;
 
-      // Add tracks to the new playlist
-      await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ uris: trackUris })
-      });
+      // Create a new playlist
+      const createResponse = await fetch(
+        `https://api.spotify.com/v1/users/${userId}/playlists`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name, public: false })
+        }
+      );
+
+      const playlistData = await parseSpotifyResponse(createResponse);
+      if (!createResponse.ok) {
+        console.error("Spotify create playlist error:", playlistData);
+        throw new Error(`Create playlist failed: ${createResponse.status}`);
+      }
+
+      const playlistId = playlistData.id;
+
+      // Add tracks to the playlist
+      const addResponse = await fetch(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ uris: trackUris })
+        }
+      );
+
+      const addData = await parseSpotifyResponse(addResponse);
+      if (!addResponse.ok) {
+        console.error("Spotify add tracks error:", addData);
+        throw new Error(`Add tracks failed: ${addResponse.status}`);
+      }
 
       console.log('Playlist saved successfully!');
     } catch (error) {
