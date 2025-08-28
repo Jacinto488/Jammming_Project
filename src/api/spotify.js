@@ -155,6 +155,16 @@ const Spotify = {
       return [];
     }
 
+    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    const data = await parseSpotifyResponse(response);
+    if (!response.ok) {
+      console.error("Spotify search error:", data);
+      throw new Error(`${response.status} - Search request failed`);
+    }
+
     return data.tracks.items.map(track => ({
       id: track.id,
       name: track.name,
