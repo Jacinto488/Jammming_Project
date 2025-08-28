@@ -71,7 +71,6 @@ const getAccessToken = async (code) => {
     }
 
     localStorage.setItem('access_token', access_token);
-    localStorage.setItem('expires_in', Date.now() + expires_in * 1000);
     localStorage.removeItem('verifier');
 
     // Remove the `code` and `state` parameters from the URL after success
@@ -117,19 +116,9 @@ getAccessTokenFromUrl: async () => {
     return getAccessToken(code);
   }
 
-  // Check for an existing token in local storage
-  const storedToken = localStorage.getItem('access_token');
-  const expiresIn = localStorage.getItem('expires_in');
-
-  // If we have a token and it hasn't expired, use it
-  if (storedToken && Date.now() < expiresIn) {
-    return storedToken;
-  }
-
-  // Token missing or expired → force re-authentication
-  console.warn("Access token missing or expired, re-authenticating...");
-  await Spotify.authenticate();
+  // Always force re-authentication unless code is in URL
   return null;
+
 },
 
   // Fetches a user's profile
