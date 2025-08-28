@@ -17,9 +17,30 @@ const App = () => {
   // Use a more robust useEffect to handle the initial authentication check.
   useEffect(() => {
   const authenticateUser = async () => {
-    const token = await Spotify.getAccessTokenFromUrl();
-    if (token) setIsAuthenticated(true); 
-    // Otherwise, Spotify.authenticate() is already called inside getAccessTokenFromUrl()
+    // Try to get token from URL (PKCE code)
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      // Exchange code for token
+      const token = await Spotify.getAccessTokenFromUrl();
+      if (token) setIsAuthenticated(true);
+      return;
+    }
+
+    // Check localStorage token and expiry
+    const token = localStorage.getItem('access_token');
+    const expiry = localStorage.getItem('token_expiry');
+
+    if (!token || !expiry || Date.now() > expiry) {
+      // No valid token → force login
+      console.log("No valid token, redirecting to Spotify login...");
+      Spotify.authenticate(); // This will immediately navigate to Spotify
+      return; // STOP any further execution
+    }
+
+    // Token is valid
+    setIsAuthenticated(true);
   };
 
   authenticateUser();

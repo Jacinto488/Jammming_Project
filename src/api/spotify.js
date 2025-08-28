@@ -94,6 +94,7 @@ const getAccessToken = async (code) => {
 const Spotify = {
 
   authenticate: async () => {
+    console.log("Redirecting user to Spotify login...");
     const verifier = generateRandomString(128);
     const challenge = await sha256(verifier);
     const code_challenge = base64urlencode(challenge);
