@@ -116,10 +116,15 @@ getAccessTokenFromUrl: async () => {
     return getAccessToken(code);
   }
 
-  // Always force re-authentication unless code is in URL
-  return null;
+  // ✅ Fallback: try to use stored token
+  const storedToken = localStorage.getItem('access_token');
+  if (storedToken) {
+    return storedToken;
+  }
 
+  return null; // no code and no stored token → must re-authenticate
 },
+
 
   // Fetches a user's profile
   getProfile: async (accessToken) => {
@@ -172,13 +177,18 @@ getAccessTokenFromUrl: async () => {
 
   // Saves a playlist
   savePlaylist: async (name, trackUris) => {
-    const profile = await Spotify.getProfile(accessToken);
-    const userId = profile.id;
     const accessToken = await Spotify.getAccessTokenFromUrl();
     if (!accessToken) {
-      console.error("Unable to get a valid access token.");
-      return [];
-    }
+    console.error("Unable to get a valid access token.");
+    return [];
+  }
+
+  const profile = await Spotify.getProfile(accessToken);
+  if (!profile) {
+    console.error("Could not fetch user profile.");
+    return [];
+  }
+  const userId = profile.id;
 
     try {
       // Create a new playlist
