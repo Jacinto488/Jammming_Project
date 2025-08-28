@@ -146,12 +146,14 @@ const Spotify = {
   },
 
   search: async (term) => {
-    const accessToken = await Spotify.getAccessTokenFromUrl();
-    if (!accessToken) throw new Error('Access token is missing');
+    let accessToken = localStorage.getItem('access_token');
+    const expiry = localStorage.getItem('token_expiry');
 
-    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
+    if (!accessToken || Date.now() > expiry) {
+      console.log('Token missing or expired, redirecting to Spotify login...');
+      Spotify.authenticate();
+      return [];
+    }
 
     const data = await parseSpotifyResponse(response);
     if (!response.ok) {
@@ -169,8 +171,14 @@ const Spotify = {
   },
 
   savePlaylist: async (name, trackUris) => {
-    const accessToken = await Spotify.getAccessTokenFromUrl();
-    if (!accessToken) throw new Error("Unable to get valid access token");
+    let accessToken = localStorage.getItem('access_token');
+    const expiry = localStorage.getItem('token_expiry');
+
+    if (!accessToken || Date.now() > expiry) {
+      console.log('Token missing or expired, redirecting to Spotify login...');
+      Spotify.authenticate();
+      return [];
+    }
 
     const profile = await Spotify.getProfile(accessToken);
     if (!profile) throw new Error("Could not fetch user profile");
