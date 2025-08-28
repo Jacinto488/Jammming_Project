@@ -149,33 +149,37 @@ getAccessTokenFromUrl: async () => {
   },
 
   // Searches for tracks
-  search: async (term) => {
-    const accessToken = await Spotify.getAccessTokenFromUrl();
-    if (!accessToken) {
-      console.error("Unable to get a valid access token.");
-      return [];
-    }
+ search: async (term) => {
+  const accessToken = await Spotify.getAccessTokenFromUrl();
+  console.log("Using access token:", accessToken);
 
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${term}`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      if (!response.ok) {
-        throw new Error('Search request failed');
-      }
-      const data = await response.json();
-      return data.tracks.items.map(track => ({
-        id: track.id,
-        name: track.name,
-        artist: track.artists.map(artist => artist.name).join(', '),
-        album: track.album.name,
-        uri: track.uri
-      }));
-    } catch (error) {
-      console.error('Error searching:', error);
-      return [];
+  if (!accessToken) {
+    console.error('Access token is missing.');
+    return [];
+  }
+
+  try {
+    const response = await fetch(`https://api.spotify.com/v1/search?type=track&q=${encodeURIComponent(term)}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Spotify search error:", errorData);
+      throw new Error('Search request failed');
     }
-  },
+    const data = await response.json();
+    return data.tracks.items.map(track => ({
+      id: track.id,
+      name: track.name,
+      artist: track.artists.map(artist => artist.name).join(', '),
+      album: track.album.name,
+      uri: track.uri
+    }));
+  } catch (error) {
+    console.error('Error searching:', error);
+    return [];
+  }
+},
 
   // Saves a playlist
   savePlaylist: async (name, trackUris) => {
