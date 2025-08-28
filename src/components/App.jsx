@@ -29,15 +29,21 @@ const App = () => {
 
   // Function to handle the search.
   const handleSearch = async () => {
-    if (!searchTerm) return;
-    try {
-      const results = await Spotify.search(searchTerm);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Error during search:', error);
-      // You could add a user-facing error message here.
+  if (!searchTerm) return;
+
+  try {
+    const results = await Spotify.search(searchTerm);
+    setSearchResults(results);
+  } catch (error) {
+    console.error('Error during search:', error);
+
+    // Auto-redirect to Spotify login if error is 403 (forbidden)
+    if (error.message.includes('403') || error.message.includes('Search request failed')) {
+      console.warn('Access token invalid or expired. Redirecting to Spotify login...');
+      Spotify.authenticate();
     }
-  };
+  }
+};
 
   // Function to add a track from the search results to the playlist.
   const addTrack = (trackToAdd) => {
