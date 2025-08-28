@@ -155,12 +155,6 @@ const Spotify = {
       return [];
     }
 
-    const data = await parseSpotifyResponse(response);
-    if (!response.ok) {
-      console.error("Spotify search error:", data);
-      throw new Error(`${response.status} - Search request failed`);
-    }
-
     return data.tracks.items.map(track => ({
       id: track.id,
       name: track.name,
